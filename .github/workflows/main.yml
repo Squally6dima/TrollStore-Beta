@@ -1,1 +1,52 @@
+name: Build TrollStore IPA
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          brew install ldid libarchive
+
+      - name: Setup Theos & iOS SDKs
+        run: |
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          curl -LO https://github.com/theos/sdks/archive/master.zip
+          unzip -q master.zip
+          mv sdks-master/* $HOME/theos/sdks/
+          rm -rf sdks-master master.zip
+
+      - name: Build TrollStore Projects
+        run: |
+          export THEOS=$HOME/theos
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Package TrollStore IPA
+        run: |
+          mkdir -p _build/IPA/Payload
+          cp -r TrollStore/.theos/obj/TrollStore.app _build/IPA/Payload/
+          cd _build/IPA
+          zip -r ../TrollStore.ipa Payload
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrollStore-Build-Artifacts
+          path: |
+            _build/TrollStore.ipa
+            _build/TrollStore.tar
+            _build/TrollHelper_iOS15.ipa
+            _build/TrollHelper_arm64e.ipa
