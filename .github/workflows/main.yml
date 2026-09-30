@@ -19,34 +19,32 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          brew install ldid libarchive
+          brew install ldid libarchive openssl@3 pkg-config
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(brew --prefix openssl@3)/lib/pkgconfig" >> $GITHUB_ENV
 
-      - name: Setup Theos & iOS SDKs
+      - name: Setup Theos & iOS 16.5 SDK
         run: |
           git clone --recursive https://github.com/theos/theos.git $HOME/theos
-          curl -LO https://github.com/theos/sdks/archive/master.zip
-          unzip -q master.zip
-          mv sdks-master/* $HOME/theos/sdks/
-          rm -rf sdks-master master.zip
+          curl -LO https://github.com/theos/sdks/releases/download/iPhoneOS16.5.sdk/iPhoneOS16.5.sdk.tar.xz
+          tar -xf iPhoneOS16.5.sdk.tar.xz -C $HOME/theos/sdks
+          rm iPhoneOS16.5.sdk.tar.xz
 
-      - name: Build TrollStore Projects
+      - name: Build TrollStore
         run: |
-          export THEOS=$HOME/theos
-          make -j$(sysctl -n hw.ncpu)
+          make pre_build make_fastPathSign make_roothelper make_trollstore make_trollhelper_embedded assemble_trollstore
 
       - name: Package TrollStore IPA
         run: |
-          mkdir -p _build/IPA/Payload
-          cp -r TrollStore/.theos/obj/TrollStore.app _build/IPA/Payload/
-          cd _build/IPA
-          zip -r ../TrollStore.ipa Payload
+          mkdir -p _build/Payload
+          cp -r TrollStore/.theos/obj/TrollStore.app _build/Payload/
+          cd _build
+          zip -vr TrollStore.ipa Payload
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrollStore-Build-Artifacts
+          name: TrollStore-IPA
           path: |
             _build/TrollStore.ipa
             _build/TrollStore.tar
-            _build/TrollHelper_iOS15.ipa
-            _build/TrollHelper_arm64e.ipa
