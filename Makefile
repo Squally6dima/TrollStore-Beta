@@ -6,6 +6,22 @@ pre_build:
 	@rm -rf ./_build 2>/dev/null || true
 	@mkdir -p ./_build
 
+trollstore_ipa: pre_build
+	@$(MAKE) -C ./Exploits/fastPathSign
+	@$(MAKE) -C ./RootHelper DEBUG=0
+	@$(MAKE) -C ./TrollStore FINALPACKAGE=1
+	@$(MAKE) clean -C ./TrollHelper
+	@$(MAKE) -C ./TrollHelper FINALPACKAGE=1 EMBEDDED_ROOT_HELPER=1
+	@cp ./TrollHelper/.theos/obj/TrollStorePersistenceHelper.app/TrollStorePersistenceHelper ./_build/PersistenceHelper_Embedded
+	@cp ./RootHelper/.theos/obj/trollstorehelper ./TrollStore/.theos/obj/TrollStore.app/trollstorehelper
+	@cp ./TrollHelper/.theos/obj/TrollStorePersistenceHelper.app/TrollStorePersistenceHelper ./TrollStore/.theos/obj/TrollStore.app/PersistenceHelper
+	@export COPYFILE_DISABLE=1
+	@tar -czvf ./_build/TrollStore.tar -C ./TrollStore/.theos/obj TrollStore.app
+	@mkdir -p ./_build/Payload
+	@cp -r ./TrollStore/.theos/obj/TrollStore.app ./_build/Payload/
+	@cd ./_build && zip -vr TrollStore.ipa Payload
+
+
 make_fastPathSign:
 	@$(MAKE) -C ./Exploits/fastPathSign $(MAKECMDGOALS)
 

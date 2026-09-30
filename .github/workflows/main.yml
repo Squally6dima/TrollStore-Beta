@@ -29,16 +29,9 @@ jobs:
           rm -rf $HOME/theos/sdks
           git clone --depth=1 https://github.com/theos/sdks.git $HOME/theos/sdks
 
-      - name: Build TrollStore
+      - name: Build TrollStore IPA
         run: |
-          make pre_build make_fastPathSign make_roothelper make_trollstore make_trollhelper_embedded assemble_trollstore
-
-      - name: Package TrollStore IPA
-        run: |
-          mkdir -p _build/Payload
-          cp -r TrollStore/.theos/obj/TrollStore.app _build/Payload/
-          cd _build
-          zip -vr TrollStore.ipa Payload
+          make trollstore_ipa
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
