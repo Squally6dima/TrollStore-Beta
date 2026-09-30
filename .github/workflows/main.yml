@@ -36,7 +36,8 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrollStore-IPA
+          name: TrollStore-and-Helper-IPA
           path: |
             _build/TrollStore.ipa
+            _build/TrollHelper.ipa
             _build/TrollStore.tar

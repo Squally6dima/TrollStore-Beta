@@ -17,9 +17,14 @@ trollstore_ipa: pre_build
 	@cp ./TrollHelper/.theos/obj/TrollStorePersistenceHelper.app/TrollStorePersistenceHelper ./TrollStore/.theos/obj/TrollStore.app/PersistenceHelper
 	@export COPYFILE_DISABLE=1
 	@tar -czvf ./_build/TrollStore.tar -C ./TrollStore/.theos/obj TrollStore.app
-	@mkdir -p ./_build/Payload
-	@cp -r ./TrollStore/.theos/obj/TrollStore.app ./_build/Payload/
-	@cd ./_build && zip -vr TrollStore.ipa Payload
+	@mkdir -p ./_build/StorePayload/Payload
+	@cp -r ./TrollStore/.theos/obj/TrollStore.app ./_build/StorePayload/Payload/
+	@cd ./_build/StorePayload && zip -vr ../TrollStore.ipa Payload
+	@rm -rf ./_build/StorePayload
+	@mkdir -p ./_build/HelperPayload/Payload
+	@cp -r ./TrollHelper/.theos/obj/TrollStorePersistenceHelper.app ./_build/HelperPayload/Payload/
+	@cd ./_build/HelperPayload && zip -vr ../TrollHelper.ipa Payload
+	@rm -rf ./_build/HelperPayload
 
 
 make_fastPathSign:
